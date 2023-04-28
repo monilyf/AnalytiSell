@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "432264444306",
+    "project_id": "analytisell",
+    "storage_bucket": "analytisell.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:432264444306:android:269c7358023160fd90e94b",
+        "android_client_info": {
+          "package_name": "com.analytisell"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "432264444306-cos4rh873fjisqvoe8vpo83qb54pitpr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBiStUWrJFz4wNkNutH28mjFJ3c99mKLOY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "432264444306-cos4rh873fjisqvoe8vpo83qb54pitpr.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

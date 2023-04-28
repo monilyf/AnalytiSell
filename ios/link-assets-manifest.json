@@ -1,0 +1,17 @@
+{
+  "migIndex": 1,
+  "data": [
+    {
+      "path": "assets/fonts/Gilroy-LightItalic.ttf",
+      "sha1": "7d7b3904500fafa0dfc8af4372a61214c71c2c21"
+    },
+    {
+      "path": "assets/fonts/Gilroy-SemiBold.ttf",
+      "sha1": "c6a7771fa8c42ba06d6a7a2a93bb233a26a6a62b"
+    },
+    {
+      "path": "assets/fonts/Gilroy.ttf",
+      "sha1": "8017fa012735b7328e737c58373e264b76323c60"
+    }
+  ]
+}
