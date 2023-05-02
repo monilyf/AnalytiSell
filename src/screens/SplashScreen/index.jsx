@@ -20,7 +20,7 @@ const SplashScreen = ({navigation}) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsVisible(false);
-      navigation.navigate(ROUTE.UNAUTHENTICATED, {screen: ROUTE.LOGIN});
+      navigation.navigate(ROUTE.AUTHENTICATED, {screen: ROUTE.DASHBOARD});
     }, 2000);
 
     return () => {

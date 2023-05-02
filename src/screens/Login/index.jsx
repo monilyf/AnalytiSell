@@ -20,16 +20,9 @@ const Login = ({navigation}) => {
   const [userData, setUserData] = useState({email: '', password: ''});
   const handleSubmit = async () => {
     if (userData.email && userData.password) {
-      // login(
-      //   userData,
-      //   () => {
-      //     console.log('cb success');
-      //     navigation.navigate(ROUTE.AUTHENTICATED);
-      //   },
-      //   () => console.log('cb error'),
-      // );
-        let params = {"identifier":userData.email,password:userData.password}
-        console.log('params: ', params);
+          navigation.navigate(ROUTE.AUTHENTICATED);
+   
+        // let params = {"identifier":userData.email,password:userData.password}
       //   api.auth.login(params).then((res)=>{
       //     console.log('res: ', res);
 
@@ -40,18 +33,6 @@ const Login = ({navigation}) => {
       //   console.log('result: ', result);
 
       // }
-      fetch('http://192.168.1.167:1337/api/details-fields', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-        .then(res => {
-          console.log('response--', res);
-        })
-        .catch(e => {
-          console.log('error--', e, e.response);
-        });
     }
   };
   return (

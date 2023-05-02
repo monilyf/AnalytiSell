@@ -1,14 +1,11 @@
-import {request, check, PERMISSIONS, RESULTS} from 'react-native-permissions';
 import {
   View,
-  Text,
   SafeAreaView,
   StyleSheet,
   TouchableOpacity,
   Image,
-  FlatList,
 } from 'react-native';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import Header from '../../components/ui/Header';
 import {COLORS} from '../../utils/Color';
 import ThemeUtils from '../../utils/ThemeUtils';
@@ -17,10 +14,47 @@ import ImagePicker from 'react-native-image-crop-picker';
 import {ROUTE} from '../../routes/routes';
 import MasonryList from '@react-native-seoul/masonry-list';
 import Label from '../../components/ui/Label';
+import RNFS from 'react-native-fs';
+import {requestExternalStoragePermission} from '../../utils/helper';
 
 const Dashboard = ({navigation}) => {
   const [imageArray, setImageArray] = useState([]);
-  console.log('imageArray: ', imageArray);
+  const [isLongPress, setLongPress] = useState(false);
+  const directoryPath = RNFS.ExternalStorageDirectoryPath + '/AppTest/';
+
+  const createImageArray = async data => {
+    let tempArray = data?.map(img => {
+      return {name: img.name, image: `file://${img.path}`};
+    });
+    setImageArray(tempArray);
+  };
+
+  const hanlePermission = async () => {
+    let permission = await requestExternalStoragePermission();
+    if (permission === 'granted') {
+      RNFS.exists(directoryPath)
+        .then(exist => {
+          console.log(`file ${exist ? '' : 'not'} exists`);
+          RNFS.readDir(directoryPath)
+            .then(result => {
+              createImageArray(result);
+            })
+            .catch(err => {
+              console.log(
+                'Error while reading directory - ',
+                err.message,
+                err.code,
+              );
+            });
+        })
+        .catch(error => {
+          console.log('Error while checking file existance - ', error);
+        });
+    }
+  };
+  useEffect(() => {
+    hanlePermission();
+  }, []);
 
   const handleImageArray = arr => {
     let imgArr = arr.map((item, index) => {
@@ -35,39 +69,49 @@ const Dashboard = ({navigation}) => {
 
   const openGallery = async () => {
     ImagePicker.openPicker({
-      // width: 300,
-      // height: 400,
       multiple: true,
       cropping: false,
-    }).then(image => {
-      console.log('galary image--', image);
-      handleImageArray(image);
-    });
+    })
+      .then(image => {
+        handleImageArray(image);
+      })
+      .catch(e => {
+        console.log('Error while action in Gallery - ', e.message);
+      });
   };
   const openCamera = async () => {
     ImagePicker.openCamera({
-      // width: 300,
-      // height: 400,
       cropping: false,
-    }).then(image => {
-      console.log('camera image--', image);
-      handleImageArray(image);
-    });
+    })
+      .then(image => {
+        handleImageArray(image);
+      })
+      .catch(e => {
+        console.log('Error while action in Gallery - ', e.message);
+      });
   };
   const renderItem = ({item}) => {
+    const imageStyle = [
+      styles.imageItem,
+      {
+        width: ThemeUtils.relativeWidth(45),
+        aspectRatio: Number(item?.aspectRatio ?? 1),
+      },
+    ];
     return (
       <TouchableOpacity
+        onLongPress={() =>
+          setLongPress({status: !isLongPress.status, id: item.name})
+        }
         onPress={() => navigation.navigate(ROUTE.DETAILS, {data: item})}>
-        <Image
-          source={{uri: item.image}}
-          style={[
-            styles.imageItem,
-            {
-              width: ThemeUtils.relativeWidth(45),
-              aspectRatio: Number(item.aspectRatio),
-            },
-          ]}
-        />
+        {isLongPress.status && isLongPress.id === item.name ? (
+          <View style={[imageStyle, styles.contentCenter]}>
+            <Label>{`₹ ${item.price ? item.price : 'Add Price'}`}</Label>
+            <Label>{`Size - ${item.size ? item.size : 'Add Size'}`}</Label>
+          </View>
+        ) : (
+          <Image source={{uri: item.image}} style={imageStyle} />
+        )}
       </TouchableOpacity>
     );
   };
@@ -75,32 +119,25 @@ const Dashboard = ({navigation}) => {
     <SafeAreaView style={styles.container}>
       <Header />
       <View style={styles.subContainer}>
-        <Label color={COLORS.DarkFont} xlarge>Welcome User</Label>
+        <Label color={COLORS.DarkFont} xlarge>
+          Welcome User
+        </Label>
         <View style={styles.imageContainer}>
-          {/* <FlatList
-            showsVerticalScrollIndicator={true}
-            data={imageArray}
-            renderItem={renderItem}
-            keyExtractor={item => item.id}
-            numColumns={2}
-            style={{borderRadius: 10}}
-            columnWrapperStyle={{
-              // display:'grid',
-              gridTemplateRows:'masonry',
-              justifyContent: 'space-between',
-            }}
-          /> */}
-          <MasonryList
-            data={imageArray}
-            keyExtractor={item => item.id}
-            numColumns={2}
-            showsVerticalScrollIndicator={false}
-            renderItem={renderItem}
-            // refreshing={isLoadingNext}
-            // onRefresh={() => refetch({first: ITEM_CNT})}
-            // onEndReachedThreshold={0.1}
-            // onEndReached={() => loadNext(ITEM_CNT)}
-          />
+          {imageArray.length ? (
+            <MasonryList
+              data={imageArray}
+              keyExtractor={item => item.name}
+              numColumns={2}
+              showsVerticalScrollIndicator={false}
+              renderItem={renderItem}
+              // refreshing={isLoadingNext}
+              // onRefresh={() => refetch({first: ITEM_CNT})}
+              // onEndReachedThreshold={0.1}
+              // onEndReached={() => loadNext(ITEM_CNT)}
+            />
+          ) : (
+            <Label>There is no image in mentioned directory.</Label>
+          )}
         </View>
       </View>
       <View style={styles.actionContainer}>
@@ -121,7 +158,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.LightBG,
-    borderTopLeftRadius:8,
+    borderTopLeftRadius: 8,
   },
   subContainer: {
     padding: ThemeUtils.relativeHeight(2),
@@ -158,5 +195,10 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
     borderRadius: 10,
     marginBottom: 10,
+    backgroundColor: COLORS.secondary,
+  },
+  contentCenter: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

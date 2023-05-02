@@ -21,7 +21,6 @@ const cache = {};
 
 const client = ({ method = METHODS.POST, url = BASE_URL, data, useCache = false, invalidateQuery = false, ...rest }) =>{
     const apiUrl = BASE_URL+url;
-    console.log('url: ', url,apiUrl);
    return  useCache && !invalidateQuery && cache[url]
         ? Promise.resolve(cache[url])
         : request({

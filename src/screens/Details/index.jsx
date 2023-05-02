@@ -11,6 +11,7 @@ import CommonInput from '../../components/ui/CommonInput';
 import Header from '../../components/ui/Header';
 import {COLORS} from '../../utils/Color';
 import ThemeUtils from '../../utils/ThemeUtils';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Details = ({navigation, route}) => {
   const [showDatePicker, setDatePicker] = useState({isOpen: false, type: ''});
