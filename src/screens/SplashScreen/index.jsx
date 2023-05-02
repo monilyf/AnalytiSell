@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {CommonActions} from '@react-navigation/native';
 import React, {useEffect, useState} from 'react';
 import {Image, StyleSheet, Text, View} from 'react-native';
@@ -17,15 +18,22 @@ const SplashScreen = ({navigation}) => {
     index: 0,
     routes: [{name: ROUTE.UNAUTHENTICATED}],
   });
+  const setStore = async () => {
+    try {
+      const value = await AsyncStorage.getItem('imageRecords');
+      if (value) {
+        await AsyncStorage.setItem('imageRecords', value);
+      } else {
+        await AsyncStorage.setItem('imageRecords', JSON.stringify([]));
+      }
+      // navigation.navigate(ROUTE.AUTHENTICATED, {screen: ROUTE.DASHBOARD});
+      navigation.dispatch(resetToAuth);
+    } catch (e) {
+      console.log('Error while working with storage - ', e);
+    }
+  };
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsVisible(false);
-      navigation.navigate(ROUTE.AUTHENTICATED, {screen: ROUTE.DASHBOARD});
-    }, 2000);
-
-    return () => {
-      clearTimeout(timer);
-    };
+    setStore();
   }, []);
 
   return (

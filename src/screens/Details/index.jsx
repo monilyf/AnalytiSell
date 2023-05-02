@@ -1,27 +1,60 @@
-import React, {useState} from 'react';
-import {
-  Image,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  View,
-} from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {Image, SafeAreaView, ScrollView, StyleSheet, View} from 'react-native';
 import CommonButton from '../../components/ui/CommonButton';
 import CommonInput from '../../components/ui/CommonInput';
 import Header from '../../components/ui/Header';
 import {COLORS} from '../../utils/Color';
 import ThemeUtils from '../../utils/ThemeUtils';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import CommonDateTimePicker from '../../components/ui/CommonDateTimePicker';
 
 const Details = ({navigation, route}) => {
   const [showDatePicker, setDatePicker] = useState({isOpen: false, type: ''});
-  const [state, setState] = useState({});
+  const [state, setState] = useState({
+    purchase_date: new Date(),
+    purchase_from: '',
+    purchase_price: '',
+    selling_date: new Date(),
+    sell_to: '',
+    selling_price: '',
+    size: '',
+  });
   const {data} = route.params;
 
   const handleState = (key, value) => {
     setState({...state, [key]: value});
   };
+  const fetchStoreData = async () => {
+    let value = await AsyncStorage.getItem('imageRecords');
+    let imageRecords = JSON.parse(value);
+    let index = imageRecords.findIndex(item => item.name === data.name);
+    if (index > -1) {
+      setState({...imageRecords[[index]]});
+    }
+  };
+  useEffect(() => {
+    fetchStoreData();
+  }, []);
 
+  
+  const handleSave = async () => {
+    try {
+      let value = await AsyncStorage.getItem('imageRecords');
+      let imageRecords = JSON.parse(value);
+      let index = imageRecords.findIndex(item => {
+        return item.name === data.name;
+      });
+      if (index > -1) {
+        imageRecords[[index]] = {...imageRecords[[index]], ...state};
+      } else {
+        imageRecords.push({...state, name: data.name});
+      }
+      await AsyncStorage.setItem('imageRecords', JSON.stringify(imageRecords));
+      navigation.goBack();
+    } catch (e) {
+      console.log('Error while storing data - ', e);
+    }
+  };
   return (
     <SafeAreaView style={styles.container}>
       <Header />
@@ -35,7 +68,8 @@ const Details = ({navigation, route}) => {
                   data.aspectRatio > 1
                     ? ThemeUtils.relativeWidth(80)
                     : ThemeUtils.relativeWidth(50),
-                aspectRatio: data.aspectRatio,
+                aspectRatio: data.aspectRatio ?? 1,
+                resizeMode: 'contain',
                 borderRadius: 8,
               },
             ]}
@@ -43,10 +77,10 @@ const Details = ({navigation, route}) => {
         </View>
 
         <View style={styles.detailsContainer}>
-          <CommonInput
+          <CommonDateTimePicker
             label={'Purchase Date'}
             type={'date'}
-            value={state.purchase_date}
+            date={state.purchase_date}
             onPress={() => setDatePicker({isOpen: true, type: 'purchase_date'})}
             isOpen={
               showDatePicker.isOpen && showDatePicker.type === 'purchase_date'
@@ -71,8 +105,15 @@ const Details = ({navigation, route}) => {
             onChangeText={value => handleState('purchase_price', value)}
           />
           <CommonInput
+            label={'Size'}
+            type={'text'}
+            value={state.size}
+            onChangeText={value => handleState('size', value)}
+          />
+          <CommonDateTimePicker
             label={'Selling Date'}
-            value={state.selling_date}
+            date={state.selling_date}
+            minimumDate={state.purchase_date}
             type={'date'}
             onPress={() => setDatePicker({isOpen: true, type: 'selling_date'})}
             isOpen={
@@ -101,7 +142,7 @@ const Details = ({navigation, route}) => {
         <View style={styles.buttonContainer}>
           <CommonButton
             label={'Save'}
-            onPress={() => {}}
+            onPress={handleSave}
             buttonColor={COLORS.DarkFont}
             labelColor={COLORS.LightBG}
             variant={'contained'}

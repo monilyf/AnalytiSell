@@ -9,13 +9,12 @@ import React, {useEffect, useState} from 'react';
 import Header from '../../components/ui/Header';
 import {COLORS} from '../../utils/Color';
 import ThemeUtils from '../../utils/ThemeUtils';
-import {IMAGES} from '../../assets/images';
-import ImagePicker from 'react-native-image-crop-picker';
 import {ROUTE} from '../../routes/routes';
 import MasonryList from '@react-native-seoul/masonry-list';
 import Label from '../../components/ui/Label';
 import RNFS from 'react-native-fs';
 import {requestExternalStoragePermission} from '../../utils/helper';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Dashboard = ({navigation}) => {
   const [imageArray, setImageArray] = useState([]);
@@ -29,7 +28,7 @@ const Dashboard = ({navigation}) => {
     setImageArray(tempArray);
   };
 
-  const hanlePermission = async () => {
+  const handlePermission = async () => {
     let permission = await requestExternalStoragePermission();
     if (permission === 'granted') {
       RNFS.exists(directoryPath)
@@ -52,9 +51,24 @@ const Dashboard = ({navigation}) => {
         });
     }
   };
+  const getStoreData = async () => {
+    let value = await AsyncStorage.getItem('imageRecords');
+    const imageRecords = JSON.parse(value);
+    let data = imageRecords.find(item => item.name === isLongPress.id);
+    setLongPress({
+      ...isLongPress,
+      price: data?.selling_price,
+      size: data?.size,
+    });
+  };
+
   useEffect(() => {
-    hanlePermission();
+    handlePermission();
   }, []);
+
+  useEffect(() => {
+    getStoreData();
+  }, [isLongPress.id]);
 
   const handleImageArray = arr => {
     let imgArr = arr.map((item, index) => {
@@ -101,13 +115,23 @@ const Dashboard = ({navigation}) => {
     return (
       <TouchableOpacity
         onLongPress={() =>
-          setLongPress({status: !isLongPress.status, id: item.name})
+          setLongPress({
+            status: isLongPress.id === item.name ? !isLongPress.status : true,
+            id: item.name,
+          })
         }
-        onPress={() => navigation.navigate(ROUTE.DETAILS, {data: item})}>
+        onPress={() => {
+          setLongPress({status: false, id: ''});
+          navigation.navigate(ROUTE.DETAILS, {data: item});
+        }}>
         {isLongPress.status && isLongPress.id === item.name ? (
           <View style={[imageStyle, styles.contentCenter]}>
-            <Label>{`₹ ${item.price ? item.price : 'Add Price'}`}</Label>
-            <Label>{`Size - ${item.size ? item.size : 'Add Size'}`}</Label>
+            <Label>{`₹ ${
+              isLongPress.price ? isLongPress?.price : 'Add Price'
+            }`}</Label>
+            <Label>{`Size - ${
+              isLongPress.size ? isLongPress?.size : 'Add Size'
+            }`}</Label>
           </View>
         ) : (
           <Image source={{uri: item.image}} style={imageStyle} />
@@ -140,14 +164,6 @@ const Dashboard = ({navigation}) => {
           )}
         </View>
       </View>
-      <View style={styles.actionContainer}>
-        <TouchableOpacity style={styles.button} onPress={openCamera}>
-          <Image source={IMAGES.Camera} style={styles.cameraImage} />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={openGallery}>
-          <Image source={IMAGES.Gallery} style={styles.cameraImage} />
-        </TouchableOpacity>
-      </View>
     </SafeAreaView>
   );
 };
@@ -168,22 +184,6 @@ const styles = StyleSheet.create({
     fontSize: ThemeUtils.fontLarge,
     color: COLORS.DarkFont,
   },
-  actionContainer: {
-    alignItems: 'center',
-    justifyContent: 'space-evenly',
-    flexDirection: 'row',
-    bottom: ThemeUtils.relativeHeight(3),
-  },
-  button: {
-    backgroundColor: COLORS.buttonBG,
-    padding: 15,
-    borderRadius: 50,
-  },
-  cameraImage: {
-    height: ThemeUtils.relativeHeight(5),
-    width: ThemeUtils.relativeHeight(5),
-  },
-  galleryImage: {},
   imageContainer: {
     flex: 1,
     marginTop: 10,

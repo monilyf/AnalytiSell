@@ -42,7 +42,6 @@ const styles = StyleSheet.create({
   },
   buttonLabel: {
     fontSize: ThemeUtils.fontNormal,
-    fontFamily: 'Gilroy-SemiBold',
     textAlign:'center'
   },
   outlinedContainer: {

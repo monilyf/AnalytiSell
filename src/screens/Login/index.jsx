@@ -104,7 +104,6 @@ const styles = StyleSheet.create({
   header: {
     color: COLORS.DarkFont,
     fontSize: ThemeUtils.fontXXLarge,
-    fontFamily: 'Gilroy-SemiBold',
     marginBottom: 3,
     // width: '55%',
   },
@@ -114,7 +113,6 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     color: COLORS.DarkFont,
     textAlign: 'center',
-    fontFamily: 'Gilroy',
     width: '55%',
   },
   buttonContainer: {

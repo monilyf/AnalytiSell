@@ -1,36 +1,22 @@
-import {StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native';
+import {StyleSheet, TextInput, View} from 'react-native';
 import React from 'react';
 import {COLORS} from '../../../utils/Color';
-import DatePicker from 'react-native-date-picker';
-import moment from 'moment';
 import Label from '../Label';
+import ThemeUtils from '../../../utils/ThemeUtils';
 
 const CommonInput = props => {
-  const {errorMessage, label, onConfirmDate, handleClose, isOpen, onPress} = props;
+  const {errorMessage, label} = props;
   return (
     <View style={styles.container}>
       <Label xsmall>{label}</Label>
       <View style={styles.inputContainer}>
-        {(props.type === 'password' ||
-        props.type === 'text') && 
         <TextInput {...props} style={styles.input} />
-         }
-        {props.type === 'date' && (
-          <TouchableOpacity style={styles.box} onPress={onPress}>
-          <DatePicker
-            style={styles.input}
-            modal
-            open={isOpen}
-            date={new Date()}
-            onConfirm={date => {
-              onConfirmDate(moment(date).format('DD/MM/YYYY'));
-            }}
-            onCancel={handleClose}
-            />
-            </TouchableOpacity>
-        )}
       </View>
-      {errorMessage && <Label xsmall color={COLORS.error}>{errorMessage}</Label>}
+      {errorMessage && (
+        <Label xsmall color={COLORS.error}>
+          {errorMessage}
+        </Label>
+      )}
     </View>
   );
 };
@@ -44,14 +30,10 @@ const styles = StyleSheet.create({
   inputContainer: {
     backgroundColor: COLORS.white,
     borderRadius: 8,
-    marginVertical: 8,
+    marginVertical: ThemeUtils.relativeHeight(1),
   },
   input: {
     fontSize: 18,
-    paddingHorizontal: 15,
+    paddingHorizontal: ThemeUtils.relativeWidth(4),
   },
-  box: {
-   height:45
-  },
-
 });
