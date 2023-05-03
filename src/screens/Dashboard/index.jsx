@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   Image,
   Alert,
+  AppState,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import Header from '../../components/ui/Header';
@@ -20,8 +21,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const Dashboard = ({navigation}) => {
   const [imageArray, setImageArray] = useState([]);
   const [isLongPress, setLongPress] = useState(false);
-  const directoryPath = RNFS.ExternalStorageDirectoryPath + '/DCIM/Analytisell/';
+  const [appState, setAppState] = useState(AppState.currentState);
 
+  const directoryPath =
+    RNFS.ExternalStorageDirectoryPath + '/DCIM/Analytisell/';
+  const handleAppStateChange = state => {
+    setAppState(state);
+    if (state === 'active') fetchAnalytiSellDirectoryContent();
+  };
   const createImageArray = async data => {
     let tempArray = data?.map(img => {
       return {name: img.name, image: `file://${img.path}`};
@@ -82,6 +89,13 @@ const Dashboard = ({navigation}) => {
 
   useEffect(() => {
     handlePermission();
+    let appStateListener = AppState.addEventListener(
+      'change',
+      handleAppStateChange,
+    );
+    return () => {
+      appStateListener.remove();
+    };
   }, []);
 
   useEffect(() => {
@@ -125,18 +139,15 @@ const Dashboard = ({navigation}) => {
   };
   return (
     <SafeAreaView style={styles.container}>
-      <Header />
+      <Header label={true} />
       <View style={styles.subContainer}>
-        <Label color={COLORS.DarkFont} xlarge>
-          Welcome User
-        </Label>
         <View style={styles.imageContainer}>
           {imageArray.length ? (
             <MasonryList
               data={imageArray}
               keyExtractor={item => item.name}
               numColumns={2}
-              showsVerticalScrollIndicator={true}
+              showsVerticalScrollIndicator={false}
               renderItem={renderItem}
               onRefresh={fetchAnalytiSellDirectoryContent}
             />

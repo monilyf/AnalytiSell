@@ -57,7 +57,7 @@ const Details = ({navigation, route}) => {
   };
   return (
     <SafeAreaView style={styles.container}>
-      <Header />
+      <Header label={true} />
       <ScrollView style={styles.subContainer}>
         <View style={styles.imageContainer}>
           <Image
