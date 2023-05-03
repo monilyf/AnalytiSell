@@ -4,6 +4,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   Image,
+  Alert,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import Header from '../../components/ui/Header';
@@ -19,7 +20,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const Dashboard = ({navigation}) => {
   const [imageArray, setImageArray] = useState([]);
   const [isLongPress, setLongPress] = useState(false);
-  const directoryPath = RNFS.ExternalStorageDirectoryPath + '/AppTest/';
+  const directoryPath = RNFS.ExternalStorageDirectoryPath + '/DCIM/Analytisell/';
 
   const createImageArray = async data => {
     let tempArray = data?.map(img => {
@@ -28,27 +29,44 @@ const Dashboard = ({navigation}) => {
     setImageArray(tempArray);
   };
 
+  const fetchAnalytiSellDirectoryContent = () => {
+    RNFS.readDir(directoryPath)
+      .then(result => {
+        createImageArray(result);
+      })
+      .catch(err => {
+        console.log('Error while reading directory - ', err.message, err.code);
+      });
+  };
   const handlePermission = async () => {
     let permission = await requestExternalStoragePermission();
     if (permission === 'granted') {
       RNFS.exists(directoryPath)
         .then(exist => {
           console.log(`file ${exist ? '' : 'not'} exists`);
-          RNFS.readDir(directoryPath)
-            .then(result => {
-              createImageArray(result);
-            })
-            .catch(err => {
-              console.log(
-                'Error while reading directory - ',
-                err.message,
-                err.code,
-              );
-            });
+          if (!exist) {
+            console.log('exist: ', exist, directoryPath);
+            RNFS.mkdir(directoryPath)
+              .then(result => {
+                console.log('result: ', result);
+              })
+              .catch(err => {
+                console.log(
+                  'Error while creating directory - ',
+                  err.message,
+                  err.code,
+                );
+              });
+          }
+          fetchAnalytiSellDirectoryContent();
         })
         .catch(error => {
           console.log('Error while checking file existance - ', error);
         });
+    } else {
+      Alert.alert(
+        'Permission Denied!, You need to give  permission to see images',
+      );
     }
   };
   const getStoreData = async () => {
@@ -70,40 +88,6 @@ const Dashboard = ({navigation}) => {
     getStoreData();
   }, [isLongPress.id]);
 
-  const handleImageArray = arr => {
-    let imgArr = arr.map((item, index) => {
-      return {
-        id: imageArray.length + index,
-        image: item.path,
-        aspectRatio: (item.width / item.height).toFixed(3),
-      };
-    });
-    setImageArray([...imageArray, ...imgArr]);
-  };
-
-  const openGallery = async () => {
-    ImagePicker.openPicker({
-      multiple: true,
-      cropping: false,
-    })
-      .then(image => {
-        handleImageArray(image);
-      })
-      .catch(e => {
-        console.log('Error while action in Gallery - ', e.message);
-      });
-  };
-  const openCamera = async () => {
-    ImagePicker.openCamera({
-      cropping: false,
-    })
-      .then(image => {
-        handleImageArray(image);
-      })
-      .catch(e => {
-        console.log('Error while action in Gallery - ', e.message);
-      });
-  };
   const renderItem = ({item}) => {
     const imageStyle = [
       styles.imageItem,
@@ -152,15 +136,18 @@ const Dashboard = ({navigation}) => {
               data={imageArray}
               keyExtractor={item => item.name}
               numColumns={2}
-              showsVerticalScrollIndicator={false}
+              showsVerticalScrollIndicator={true}
               renderItem={renderItem}
-              // refreshing={isLoadingNext}
-              // onRefresh={() => refetch({first: ITEM_CNT})}
-              // onEndReachedThreshold={0.1}
-              // onEndReached={() => loadNext(ITEM_CNT)}
+              onRefresh={fetchAnalytiSellDirectoryContent}
             />
           ) : (
-            <Label>There is no image in mentioned directory.</Label>
+            <>
+              <Label>There is no image in app's directory.</Label>
+              <Label small>
+                Please move products images to File Manager/DCIM/Analytisell
+                directory.
+              </Label>
+            </>
           )}
         </View>
       </View>
@@ -196,6 +183,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 10,
     backgroundColor: COLORS.secondary,
+    resizeMode:'contain'
   },
   contentCenter: {
     alignItems: 'center',

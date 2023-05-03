@@ -27,7 +27,9 @@ const SplashScreen = ({navigation}) => {
         await AsyncStorage.setItem('imageRecords', JSON.stringify([]));
       }
       // navigation.navigate(ROUTE.AUTHENTICATED, {screen: ROUTE.DASHBOARD});
+     setTimeout(() => {
       navigation.dispatch(resetToAuth);
+     }, 2000);
     } catch (e) {
       console.log('Error while working with storage - ', e);
     }
